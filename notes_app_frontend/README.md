@@ -1,65 +1,89 @@
-# Qwik City App ⚡️
+# Notes App Frontend (Qwik)
 
-- [Qwik Docs](https://qwik.dev/)
-- [Discord](https://qwik.dev/chat)
-- [Qwik GitHub](https://github.com/QwikDev/qwik)
-- [@QwikDev](https://twitter.com/QwikDev)
-- [Vite](https://vitejs.dev/)
+A minimalistic light-themed notes application built with Qwik + Qwik City.
 
----
+Features:
+- User registration and authentication
+- Create, edit, delete notes
+- List and search notes
+- Sidebar navigation, top bar with user info, main area with notes and editor
 
-## Project Structure
+Theme:
+- Primary: #1976d2
+- Accent: #ffca28
+- Secondary: #424242
 
-This project is using Qwik with [QwikCity](https://qwik.dev/qwikcity/overview/). QwikCity is just an extra set of tools on top of Qwik to make it easier to build a full site, including directory-based routing, layouts, and more.
+## Quick Start
 
-Inside your project, you'll see the following directory structure:
+1) Install dependencies
+   npm install
 
-```
-├── public/
-│   └── ...
-└── src/
-    ├── components/
-    │   └── ...
-    └── routes/
-        └── ...
-```
+2) Configure environment
+   Copy .env.example to .env and set:
+   - VITE_API_BASE_URL: Base URL of your backend notes API
+   - VITE_SITE_URL: Your site URL (optional)
 
-- `src/routes`: Provides the directory-based routing, which can include a hierarchy of `layout.tsx` layout files, and an `index.tsx` file as the page. Additionally, `index.ts` files are endpoints. Please see the [routing docs](https://qwik.dev/qwikcity/routing/overview/) for more info.
+3) Develop
+   npm start
+   App runs on http://localhost:3000
 
-- `src/components`: Recommended directory for components.
+4) Preview production build
+   npm run preview
 
-- `public`: Any static assets, like images, can be placed in the public directory. Please see the [Vite public directory](https://vitejs.dev/guide/assets.html#the-public-directory) for more info.
+5) Build
+   npm run build
 
-## Add Integrations and deployment
+## Structure
 
-Use the `npm run qwik add` command to add additional integrations. Some examples of integrations includes: Cloudflare, Netlify or Express Server, and the [Static Site Generator (SSG)](https://qwik.dev/qwikcity/guides/static-site-generation/).
+- src/lib: api, auth, notes service functions (PUBLIC_INTERFACE)
+- src/components: UI components (TopBar, Sidebar, NoteList, NoteEditor)
+- src/routes:
+  - /auth (login, register)
+  - /app (secured area with layout, list/editor, new, search)
+  - index.tsx redirects to /auth or /app based on token presence
 
-```shell
-npm run qwik add # or `yarn qwik add`
-```
+## Environment Variables
 
-## Development
+See .env.example
+- VITE_API_BASE_URL: URL of backend API (e.g., http://localhost:8000)
+- VITE_SITE_URL: Site URL for redirects if needed
 
-Development mode uses [Vite's development server](https://vitejs.dev/). The `dev` command will server-side render (SSR) the output during development.
+Do not commit real secrets. The orchestrator will populate the actual .env.
 
-```shell
-npm start # or `yarn start`
-```
+## Expected Backend API
 
-> Note: during dev mode, Vite may request a significant number of `.js` files. This does not represent a Qwik production build.
+The frontend expects a backend providing these endpoints (JWT bearer auth):
 
-## Preview
+Auth:
+- POST /auth/register { name, email, password } -> { token, user }
+- POST /auth/login { email, password } -> { token, user }
+- GET /auth/me (Authorization: Bearer <token>) -> user
 
-The preview command will create a production build of the client modules, a production build of `src/entry.preview.tsx`, and run a local server. The preview server is only for convenience to preview a production build locally and should not be used as a production server.
+Notes:
+- GET /notes[?q=...] -> Note[]
+- GET /notes/:id -> Note
+- POST /notes { title, content, tags? } -> Note
+- PUT /notes/:id { title?, content?, tags? } -> Note
+- DELETE /notes/:id -> 204
 
-```shell
-npm run preview # or `yarn preview`
-```
+Note type:
+{
+  id: string,
+  title: string,
+  content: string,
+  tags?: string[],
+  created_at?: string,
+  updated_at?: string
+}
 
-## Production
+## Security
 
-The production build will generate client and server modules by running both client and server build commands. The build command will use Typescript to run a type check on the source code.
+- Tokens are stored in localStorage for demo purposes.
+- Consider HTTP-only cookies for production.
 
-```shell
-npm run build # or `yarn build`
-```
+## Development Notes
+
+- Styling resides in src/global.css using the minimalistic light theme.
+- Layout grid is defined by .app-shell with sidebar, top bar, and main content.
+- All network calls use src/lib/api.ts which reads VITE_API_BASE_URL.
+
